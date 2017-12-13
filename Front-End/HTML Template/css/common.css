@@ -1,0 +1,125 @@
+@charset "utf-8";
+/**
+ * ! Bstones template v5.3.0
+ * @comment     customize v0.1
+ * @author      MCShin
+ * @Write		2016-03-04
+ */
+
+
+/* ==========================================================================
+   기본 스타일
+   ========================================================================== */
+
+html, button, input, select, textarea { color: #222; } 
+body, h1, h2, h3, h4, h5, h6 { font-size: 12px; line-height:14px; }
+i, em, address{font-style: normal; font-weight: normal;}
+
+/* 드래그로 블록 선택시(텍스트영역) text-shadow 삭제 및 윈도우 기본색상으로 통일 */
+::-moz-selection { background: #b3d4fc; text-shadow: none; } 
+::selection { background: #b3d4fc;text-shadow: none;}
+
+/* 세로정렬 통일 */
+audio,canvas,iframe,img,svg,video { vertical-align: middle;}
+
+/* 기본 fieldset styles 초기화  */
+fieldset { border: 0; margin: 0; padding: 0;}
+
+/* textarea 세로크기 조정만 허용 */
+textarea {resize: vertical;}
+
+i, em, address { font-style:normal; font-weight:normal; }
+
+
+/* ==========================================================================
+   헬퍼 클래스들
+   ========================================================================== */
+
+/* 스크린 리더와 웹브라우져에서 모두 숨김처리 */
+.hidden { display: none !important; visibility:hidden; }
+
+/* 스크린 리더기에서만 보이도록 숨김처리 */
+.visuallyhidden { border: 0; clip: rect(0 0 0 0); height: 1px; margin: -1px; overflow: hidden; padding: 0; position: absolute; width: 1px; }
+
+/* .visuallyhidden 클래스가 키보드로 접근가능하도록 */
+.visuallyhidden.focusable:active,.visuallyhidden.focusable:focus {
+    clip: auto;
+    height: auto;
+    margin: 0;
+    overflow: visible;
+    position: static;
+    width: auto;
+}
+
+.invisible {visibility: hidden;}
+
+/* float준 요소 클리어 */
+.clearfix:before,.clearfix:after { content: " "; display: table;}
+.clearfix:after { clear: both;}
+.clearfix { *zoom:1; }
+
+/* 
+ * IR 기법
+ * 1. Phark Method	: 이미지로 대체할 요소에 배경이미지를 설정하고 글자는 text-indent를 이용해 화면 바깥으로 빼내는 기법
+ *					: CSS on / image off 시 텍스트가 안보인다는 단점이 있다.
+ * 2. WA IR			: 이미지로 대체할 요소에 배경이미지를 설정하고 글자는 span 태그로 감싼후 z-index : -1을 이용해 화면에 안보이게 처리
+ * // 위 두가지 IR 기법들은 웹접근성에 위배되므로 권장하지 않음 
+ */ 
+.ir-pm{text-indent:-9999px; display:block;} 
+.ir-wa{display: block; position: relative; z-index:-1;}
+
+/* 웹접근성 대응에 필요한 요소들 보이지 않도록 할때 사용할 클래스 */
+.blind, legend, hr, caption { display:block; overflow:hidden; position:absolute; top:0; left:-1000em; }
+
+/* 컨텐츠 블록 중앙정렬 */
+.center-block { display: block; margin-right: auto; margin-left: auto;}
+.pull-right { float: right !important; }
+.pull-left { float: left !important; }
+
+/* Js를 이용한 컨텐츠 제어시 사용할 클래스 */
+.show {display: block !important;}
+.hidden { display: none !important; visibility: hidden !important;}
+
+/* 텍스트 줄임 */
+.text-overflow {overflow: hidden;text-overflow: ellipsis;white-space: nowrap;display: block;}
+
+/* ==========================================================================
+   반응형 필요시 작성 할 영역
+   ========================================================================== */
+
+@media only screen and (max-width: 768px) {      /* (35em) 560px*/
+    /* 태블릿 영역 */
+}
+
+@media only screen and (max-width: 480px){
+    /* 모바일 (필요시 확장) */
+}
+
+@media print,
+       (-webkit-min-device-pixel-ratio: 1.25),
+       (min-resolution: 1.25dppx),
+       (min-resolution: 120dpi) {
+    /* 고해상도 기기용 스타일 영역 */
+}
+
+
+/* ==========================================================================
+   프린트용 스타일 ( 인쇄 필요시만 )
+   ========================================================================== */
+
+@media print {
+    *, *:before, *:after, *:first-letter, *:first-line {
+        background: transparent !important;
+        color: #000 !important;
+        box-shadow: none !important;
+        text-shadow: none !important;
+    }
+    a, a:visited { text-decoration: underline; }
+    a[href]:after { content: " (" attr(href) ")"; }
+    abbr[title]:after { content: " (" attr(title) ")"; }
+    a[href^="#"]:after, a[href^="javascript:"]:after { content: ""; } 
+    tr,img {page-break-inside: avoid; }
+    img { max-width: 100% !important; }
+    p, h2, h3 {orphans: 3; widows: 3; }
+    h2, h3 { page-break-after: avoid; }
+}

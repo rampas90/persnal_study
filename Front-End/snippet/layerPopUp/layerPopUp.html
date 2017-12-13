@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="ko">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<meta name="format-detection" content="telephone=no"/>
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta content="" name="keywords"/>
+	<meta content="" name="description"/>
+	<title>레이어팝업</title>
+
+	<script src="http://code.jquery.com/jquery-latest.min.js"></script>
+	<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.3/jquery.easing.min.js"/> -->
+
+	<style>
+
+	.dim{ position:absolute; left:0; top:0;  z-index:99;  background:#000; display:none; }
+	.modal_box{width:250px; height:170px; display:none; position:absolute; left:50%; top:50%; margin-left:-125px; margin-top:-85px; z-index:100;}
+	.alert_close{margin-left:150px;}
+	.alert_con{background:#fff; width:100px; height:120px;padding:30px 75px}
+	.alert_msg{font-size:13px; width:110px; text-align:center; margin-bottom:30px;}
+
+	
+	.info_btn{margin:0 auto; width:200px;}
+	.btn_default{font-size:11px; color:#fff; width:200px; height:50px; border:1px solid #676a71; background:#676a71; cursor:pointer}
+	.btn1{width:50px;float:left;}
+	.btn_default:active, .btn_default:hover {background:#000; color:#fff;}
+	</style>
+</head>
+
+<body>
+	
+<div class="dim"></div>
+<div class="modal_box">
+	<div class="alert_con">
+		<div class="alert_msg"><h3>LayerPopup</h3></div>
+		<button onclick="confirm();" class="btn_confirm btn_default btn1">확인</button>
+		<button class="close btn_default btn1">닫기</button>
+	</div>
+</div>
+<div class="info_btn">
+	<a href="" onclick="layer_pop(); return false;"><button class="btn_default">Click</button></a>
+</div>
+
+
+
+
+<script type="text/javascript">
+	
+function layer_pop(){
+	// 상황 별로 left,top 50% 후 margin값으로 중앙정렬 가능할 경우는 아래처럼 사용
+	// 그게 힘들경우는 offsetWidth, ScrollTop, 등으로 교체하여 사용
+
+	var docWidth = $(document).width();
+	var docHeight = $(document).height();
+	
+	$('.dim').css( {'width' : docWidth, 'height' : docHeight } );
+	$('.dim').fadeTo('slow',0.65);
+	$('.modal_box').show();
+}
+
+function confirm(){
+	// 확인 메시지
+	alert('confirm event');	
+};
+
+$(document).ready(function(){
+	// 닫기버튼 클릭시 닫기 이벤트
+	$('.close').click(function(e){
+		e.preventDefault();
+		$('.dim, .modal_box').fadeOut('slow');
+	});
+	
+	// dim 클릭시 닫기 이벤트
+	$('.dim').click(function () {  
+		$(this).fadeOut('slow');  
+		$('.modal_box').fadeOut('slow');  
+	});
+});
+
+// 터치이벤트시 이벤트 발생하지 않도록 unbinding 처리
+$('.dim').one('touchstart', function () {  
+	 $(this).unbind('click');
+});
+
+
+// 브라우져 크기가 조정될때 dim 크기 조절
+$(window).resize(function(){
+	var width = $(document).width();
+	var height = $(document).height();
+	$(".dim").width(width).height(height);	
+});
+
+</script>
+
+</body>
+
+</html>
