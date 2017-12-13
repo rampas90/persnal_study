@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="Generator" content="EditPlus®">
+	<meta name="Author" content="">
+	<meta name="Keywords" content="">
+	<meta name="Description" content="">
+	<title>실행 컨텍스트와 클로저</title>
+
+
+
+
+
+
+<script>
+
+
+function countSeconds(howMany) {
+	for (var i = 1; i <= howMany; i++) {
+		(function (currentI){
+			setTimeout(function(){
+				console.log(currentI);
+			}, currentI * 1000);
+		}(i));
+	}
+};
+countSeconds(3);
+
+
+</script>
+
+
+
+
+
+
+</head>
+<body>
+
+</body>
+
+</html>

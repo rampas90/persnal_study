@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+	<meta http-equiv="X-UA-Compatible" content="IE=Edge">
+	<meta charset="UTF-8">
+	<title>문서 제목</title>
+	<script src="jquery-1.0.js"></script>
+</head>
+<body>
+	<div id="clickDiv" onclick="alert('Mouse Click1')">Click Here</div>
+	<script>
+	$('#clickDiv').click(function(){
+		alert('Mouse Click2');
+	})
+	$('#clickDiv').click(function(){
+		alert('Mouse Click3');
+	})
+	</script>
+</body>
+</html>
