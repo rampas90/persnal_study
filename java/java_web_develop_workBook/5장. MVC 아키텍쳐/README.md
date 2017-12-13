@@ -1,0 +1,1984 @@
+## 5. MVC 아키텍쳐
+ 
+- 서블릿의 단점을 보완하기 위해 등장한 JSP(JavaServer Page)
+- MVC 아키텍쳐
+
+### 1. MVC 이해하기
+
+#### 올인원 방식과 문제점
+
+지금까지의 예제는 클라이언트의 요청 처리를 서블릿 홀로 담당하는 올인원 방식이었다.
+- 규모가 작거나 업무 변경이 많지 않은 경우에 적합하지만, 규모가 크거나 업무 변경이 잦은 경우에는 오히려 유지보수가 어렵다.
+- 요즈음에 추세에 맞지 않다.
+
+
+#### 글로벌 환경과 MVC 아키텍쳐
+
+- 시스템 변경이 잦은 상황에서 유지보수를 보다 쉽게 하려면, 중복 코드의 작성을 최소화 하고,코드변경이 쉬워야 한다.
+- 이를 위해 기존 코드의 재사용성을 높이는 방향으로 설계해야 한다.
+- 특히 객체지향의 특성을 십분 활용하여 좀 더 역할을 세분화하고 역할 간 의존성을 최소화한다.
+
+> MVC 구조에서는 클라이언트의 요청 처리를 서블릿 혼자서 담당하지 않고 세개의 컴포넌트가 나누어 처리한다.
+
+1) 컨트롤러
+- 클라이언트의 요청을 받았을 때 그 요청에 대해 실제 업무를 수행하는 모델 컴포넌트를 호출하는 일.
+- 클라이언트가 보낸 데이터가 있다면 모델을 호출할 때 전달하기 쉽게 데이터를 적절히 가공하는 일
+- 모델이 업무 수행을 완료하면, 그 결과를 가지고 화면을 생성하도록 뷰에게 전달
+
+> 즉 클라이언트 요청에 대해 모델과 뷰를 결정하여 전달하는 일을 한다. (조정자)
+
+2) 모델
+- 데이터 저장소와 연동하여 사용자가 입력한 데이터나 사용자에게 출력할 데이터를 다루는 일
+- 특히 여러개의 데이터 변경 작업(추가,변경,삭제)을 하나의 작업으로 묶은 트랜잭션을 다루는 일
+
+3) 뷰
+- 모델이 처리한 데이터나 그 작업 결과를 가지고 사용자에게 출력화면을 만드는 일
+- 이렇게 생성된 화면은 웹브라우저가 출력
+
+> 뷰 컴포넌트는 `HTML`과 `CSS`, `Javascript`를 사용하여 웹브라우저가 출력할 UI를 만든다.
+
+#### MVC 이점
+
+1) 높은 재사용성, 넓은 융통성
+- 룩앤필(look and feel)을 쉽게 교체할 수 있다. 
+- 즉 화면 생성 부분을 별도의 컴포넌트로 분리하였기 때문에, 모델에 상관없이 뷰 교체만으로 배경색이나 모양, 레이아웃, 글꼴등 사용자 화면을 쉽게 바꿀수 있다.
+
+- 원소스 멀티 유즈(one source multi use)를 구현할 수 있다.
+- 모델 컴포넌트가 작업한 결과를 다양한 뷰 컴포넌트를 통하여 PDF나 HTML,XML,JSON등으로 출력할 수 있다.
+
+- 코드를 재사용할 수 있다.
+- 면을 바꾸거나 데이터 형식을 바꾸더라도 모델 컴포넌트는 그대로 재사용 가능
+
+2) 빠른 개발, 저렴한 비용
+- 다른 프로젝트에서도 모델 컴포넌트를 재사용 할 수 있기 때문에 개발속도가 빨라진다.
+- ex) 자바 개발자는 컨트롤러와 모델 개발에 전념하고, JSP개발자나 HTML개발자는 뷰 개발에 전념!
+
+- 소스코드를 역할에 따라 여러 컴포넌트로 쪼개개 되면, 그 컴포넌ㅌ의 난이도에 따라 좀 더 낮은 수준의 개발자를 투입할 수 있어서 전체적인 개발 및 유지보수 비용을 줄일 수 있다.
+
+
+#### MVC 구동원리
+
+1. 웹브라우져가 웹애플리케이션 실행을 요청하면, 웹 서버가 그 요청을 받아서 서블릿 컨테이너(톰캣이라던지..)넘겨준다.
+서블릿 컨테이너는 URL을 확인하여 그 요청을 처리할 서블릿을 찾아서 실행
+
+2. 서블릿은 실제 업무를 처리하는 모델 자바 객체의 메소드를 호출한다.
+만약 웹 브라우저가 보낸 데이터를 변경하거나 저장해야 한다면 그 데이터를 가공하여 값 객체 (VO; Value Object)를 생성하고, 
+모델 객체의 메소드를 호출할 때 인자값으로 넘긴다.
+모델 객체는 `엔터프라이즈 자바빈`일 수도 있고, `일반 자바 객체`일 수도 있다.
+
+3. 모델 객체는 JDBC 를 사용하여 매개변수로 넘어온 값 객체를 데이터베이스에 저장하거나, 데이터베이스로부터 질의 결과를 가져와서 값 객체로 만들어 반환한다.
+이렇게 값 객체는 객체와 객체 사이에 데이터를 전달하는 용도로 사용하기 때문에 `데이터 전송 객채(DTO; Data Transfer Object)`라고도 부른다.
+
+4. 서블릿은 모델 객체로부터 반환받은 값을 JSP에 전달한다.
+
+5. JSP는 서블릿으로부터 전달받은 값 객체를 참조하여 웹브라우저가 출력할 결과 화면을 만든다.
+그리고 웹 브라우져에 출력함으로써 요청 처리를 완료한다.
+
+6. 웹 브라우저는 서버로부터 받은 응답 내용을 화면에 출력한다.
+
+> MVC 구조로 만들게 되면 추가적으로 더 많은 클래스를 작성해야 하고 처리되는 절차도 복잡하다 기술문서에서는 이런경우를 '트레이드오프'라고 자주 표현한다.
+
+
+---
+
+### 2. 뷰 컴퓨넌트와 JSP
+
+MVC 아키텍쳐에서 뷰 컴포넌트를 만들 때 보통 JSP를 사용한다.
+
+#### JSP를 사용하는 이유
+
+
+```java
+@Override
+	protected void doGet(
+			HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+		response.setContentType("text/html; charset=UTF-8");
+		PrintWriter out = response.getWriter();
+		out.println("<html><head><title>회원 등록</title></head>");
+		out.println("<body><h1>회원 등록</h1>");
+		out.println("<form action='add' method='post'>");
+		out.println("이름: <input type='text' name='name'><br>");
+		out.println("이메일: <input type='text' name='email'><br>");
+		out.println("암호: <input type='password' name='password'><br>");
+		out.println("<input type='submit' value='추가'>");
+		out.println("<input type='reset' value='취소'>");
+		out.println("</form>");
+		out.println("</body></html>");
+	}
+```
+
+> HTML을 출력하려고 out.println()을 호출하고 있는데 상당히 복잡하다
+> 이런 부분을 해소하고자 나온 기술이 `JSP`이다
+
+#### JSP 구동 원리
+
+- JSP기술의 가장 중요한 목적은 콘텐츠를 출력하는 코딩을 단순화하는 것이다.
+
+> 어떠한 원리로 이것이 가능한지 알아보자
+
+1. 개발자는 서버에 JSP파일을 작성해둔다. 클라이언트가 JSP를 실행해 달라고 요청하면, 서블릿 컨테이너는 JSP파일에 대응하는 자바 서블릿을 찾아서 실행한다.
+
+2. 만약 JSP에 대응하는 서블릿이 없거나 JSP파일이 변경되었다면, JSP엔진을 통해 JSP 파일을 해석하여 서블릿 자바 소스를 생성한다.
+
+3. 서블릿 자바 소스는 자바 컴파일러를 통해 서블릿 클래스 파일로 컴파일 된다.
+JSP파일을 바꿀 때마다 이 과정을 반복한다.
+
+4. JSP로부터 생성된 서블릿은 서블릿 구동 방식에 따라 실행된다.
+즉 서블릿의 `service()`메소드가 호출되고, 출력 메소드를 통해 서블릿이 생성한 HTML화면을 웹브라우저로 보낸다.
+
+
+#### JSP 구동과정 확인
+
+WebContent 폴더에 jsp파일을 생성한후 (서버에 올리고 브라우져에서 테스트)를 해보면 JSP를 실행할 때 비로소  JSP엔진은 서블릿을 만든다.
+
+> 서블릿 소스를 확인하고 싶다면 워크스페이스 폴더를 확인해보자
+> .metadata/.plugins/org.eclipse.wst.server.core/tmp0 에서 쭉 따라가 보자
+
+PHP나 파이썬등은 인터프리터 방식으로 소스를 바로 읽어서 실행하지만, JSP파일은 그 자체로 실행되지 않고 자바 서블릿 클래스로 만들어진 다음에 실행된다.
+
+따라서 JSP가 더 빠르다...
+
+
+#### HttpJspPage 인터페이스
+
+JSP 엔진은 JSP파일로부터 서블릿 클래스를 생성할 때 HttpJspPage 인터페이스를 구현하나 클래스를 만든다.
+
+> `HttpJspPage`를 구현한다는 것은 결국 `Servlet 인터페이스`도 구현한다는 것이기 때문에 해당 클래스는 서블릿이 될 수 밖에 없다.
+
+이 인터페이스에 선언된 메소드를 알아보자
+
+1) _jspInit()
+- JspPage에 선언된 `jspInit()`는 JSP 객체(JSP로부터 만들어진 서블릿 객체)가 생성될 때 호출된다.
+- 자동 생성된 서블릿 소스 코드를 보면 init()가 호출될 때 jspInit()를 호출하도록 코딩되어 있다.
+- 만약 JSP 페이지에서 init()를 오버라이딩할 일이 있다면 init() 대신 jspInit()을 오버라이딩 하면 된다.
+
+2) _jspDestroy()
+- jspPage의 jspDestroy()도 마찬가지다. JSP객체(JSP로부터 만들어진 서블릿 객체)가 언로드(Unload)될 때 호출된다.
+- 마찬가지로 destory()를 오버라이딩 할 일이 있다면 destory()대신 jspDestroy()를 오버라이딩 하자
+
+3)_jspService()
+- HttpJsppage에 선언된 _jspService()는 JSP 페이지가 해야 할 작업이 들어 있는 메소드다.
+- JSP파일에 작성된 대부분의 내용이 이 메소드 안으로 들어간다.
+- 서블릿 컨테이너가 service()를 호출하면 service()메소드 내부에서는 바로 이 메소드를 호출 함으로써 JSP 페이지에 작성했던 코드들이 실행 되는 것이다.
+
+
+#### JSP 객체의 실체 분석
+
+톰캣 실행 환경의 임시배치 폴더에서 Hello.jsp로부터 생성된 자바 서블릿 소스 파일을 에디터로 확인해보자
+
+```java
+/*
+ * Generated by the Jasper component of Apache Tomcat
+ * Version: Apache Tomcat/7.0.65
+ * Generated at: 2015-11-23 01:27:07 UTC
+ * Note: The last modified time of this file was set to
+ *       the last modified time of the source file after
+ *       generation to assist with modification tracking.
+ */
+package org.apache.jsp;
+
+import javax.servlet.*;
+import javax.servlet.http.*;
+import javax.servlet.jsp.*;
+
+public final class Hello_jsp extends org.apache.jasper.runtime.HttpJspBase
+    implements org.apache.jasper.runtime.JspSourceDependent {
+
+  private static final javax.servlet.jsp.JspFactory _jspxFactory =
+          javax.servlet.jsp.JspFactory.getDefaultFactory();
+
+  private static java.util.Map<java.lang.String,java.lang.Long> _jspx_dependants;
+
+  private volatile javax.el.ExpressionFactory _el_expressionfactory;
+  private volatile org.apache.tomcat.InstanceManager _jsp_instancemanager;
+
+  public java.util.Map<java.lang.String,java.lang.Long> getDependants() {
+    return _jspx_dependants;
+  }
+
+  public javax.el.ExpressionFactory _jsp_getExpressionFactory() {
+    if (_el_expressionfactory == null) {
+      synchronized (this) {
+        if (_el_expressionfactory == null) {
+          _el_expressionfactory = _jspxFactory.getJspApplicationContext(getServletConfig().getServletContext()).getExpressionFactory();
+        }
+      }
+    }
+    return _el_expressionfactory;
+  }
+
+  public org.apache.tomcat.InstanceManager _jsp_getInstanceManager() {
+    if (_jsp_instancemanager == null) {
+      synchronized (this) {
+        if (_jsp_instancemanager == null) {
+          _jsp_instancemanager = org.apache.jasper.runtime.InstanceManagerFactory.getInstanceManager(getServletConfig());
+        }
+      }
+    }
+    return _jsp_instancemanager;
+  }
+
+  public void _jspInit() {
+  }
+
+  public void _jspDestroy() {
+  }
+
+  public void _jspService(final javax.servlet.http.HttpServletRequest request, final javax.servlet.http.HttpServletResponse response)
+        throws java.io.IOException, javax.servlet.ServletException {
+
+    final javax.servlet.jsp.PageContext pageContext;
+    javax.servlet.http.HttpSession session = null;
+    final javax.servlet.ServletContext application;
+    final javax.servlet.ServletConfig config;
+    javax.servlet.jsp.JspWriter out = null;
+    final java.lang.Object page = this;
+    javax.servlet.jsp.JspWriter _jspx_out = null;
+    javax.servlet.jsp.PageContext _jspx_page_context = null;
+
+
+    try {
+      response.setContentType("text/html; charset=UTF-8");
+      pageContext = _jspxFactory.getPageContext(this, request, response,
+      			null, true, 8192, true);
+      _jspx_page_context = pageContext;
+      application = pageContext.getServletContext();
+      config = pageContext.getServletConfig();
+      session = pageContext.getSession();
+      out = pageContext.getOut();
+      _jspx_out = out;
+
+      out.write("\r\n");
+      out.write("<!DOCTYPE html PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">\r\n");
+      out.write("<html>\r\n");
+      out.write("<head>\r\n");
+      out.write("<meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\">\r\n");
+      out.write("<title>Insert title here</title>\r\n");
+      out.write("</head>\r\n");
+      out.write("<body>\r\n");
+      out.write("\t<p>hello</p>\r\n");
+      out.write("</body>\r\n");
+      out.write("</html>");
+    } catch (java.lang.Throwable t) {
+      if (!(t instanceof javax.servlet.jsp.SkipPageException)){
+        out = _jspx_out;
+        if (out != null && out.getBufferSize() != 0)
+          try {
+            if (response.isCommitted()) {
+              out.flush();
+            } else {
+              out.clearBuffer();
+            }
+          } catch (java.io.IOException e) {}
+        if (_jspx_page_context != null) _jspx_page_context.handlePageException(t);
+        else throw new ServletException(t);
+      }
+    } finally {
+      _jspxFactory.releasePageContext(_jspx_page_context);
+    }
+  }
+}
+
+```
+
+> 자동생성된 서블릿 클래스 이름
+
+- 서블릿 클래스의 이름이 Hello_jsp로 되어있다. 톰캣 서버에서는 이런식으로 명명하고, 이름 짓는 방식은 서블릿 컨테이너마다 다른다.
+
+> HttpJspBase클래스
+
+- Hello_jsp 는 HttpJspBase를 상속받고 있는데, HttpJspBase는 톰캣 서버에서 제공하는 클래스다.
+- 소스코드를 보면 결국 HttpServlet 클래스를 상속받았고 HttpJspPage 인터페이스를 구현했다.
+- 즉 HttpJspBase를 상속받은 Hello_jsp는 서블릿이라는 뜻이다.
+
+> JSP 내장객체
+
+- _jspService()의 매개변수는 HttpServletRequest 와 HttpServletResponse 객체다.
+- 또한 선언된 지역변수 중에서 다음의 참조 변수들은 반드시 이 이름으로 존재해야 한다.
+
+```java
+	final javax.servlet.jsp.PageContext pageContext;
+    javax.servlet.http.HttpSession session = null;
+    final javax.servlet.ServletContext application;
+    final javax.servlet.ServletConfig config;
+    javax.servlet.jsp.JspWriter out = null;
+    final java.lang.Object page = this;
+```
+
+- 위와 같은 객체들은 이 메소드가 호출될 때 반드시 준비되는 객체들이기 때문에, 이 객체들을 가리켜 JSP내장객체 라고 부른다.
+- 이 객체들은 별도의 선언 없이 JSp페이지에서 마음껏 사용할 수 있다.
+
+
+
+#### HttpJspBase 클래스의 소스
+
+Hello_jsp의 슈퍼 클래스인 HttpJspBase 클래스에 대해 간단히 알아보자.
+
+- 톰캣 서버의 JSP 엔진은 서블릿 소스를 생성할 때 슈퍼 클래스로서 HttpJspBase를 사용한다. ( 이 클래스는 톰캣 ㅅ버ㅓ에 포함된 클래스다. )
+
+
+#### JSP프리컴파일
+
+웹 어플리케이션을 서버에 배치할 때 모든 JSP파일에 대해 자바 서블릿 클래스를 미리 생성하기도 한다.
+그 이유는 JSP실행 요청이 들어 왔을 때, 곧바로 서블릿을 호출할 수 있기때문이다.
+
+즉 이렇게  미리 자바 서블릿을 만들게 되면, JSP를 실행할 때 마다 JSP파일이 변경되었는지, JSP파일에 대해 서블릿 파일이 있는지 매번 검사할 필요가 없다.
+또한 실행속도를 높일 수 있다.
+
+다만 이 방식의 문제는 JSP를 편집하면 서버를 다시 시작해야 한다. 그래야만 변경된 JSP에 대해 서블릿 코드가 다시 생성된다.
+그러므로 시스템 도입 초기에는 가능한 이런 설정을 피하고 어느정도 안정화된 이후에 JSP프리컴파일을 고려하자
+
+
+### JSP의 주요 구성 요소
+
+JSP를 구성하는 요소는 크게 두 가지로 나눌 수 있다.
+- 템플릿 데이터
+- JSP 전용태그
+
+템플릿 데이터는 클라이언트로 출력되는 콘텐츠(예:HTML, 자바스크립트, css, JSON, xml 등...)이며,
+
+JSP 전용태그는 특정 자바 명령문으로 바뀌는 태그다.
+
+
+> 계산기 예제를 통해 살펴보자
+
+```php
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+
+<%
+	String v1 = "";
+	String v2 = "";
+	String result = "";
+	String[] selected = {"", "", "", ""};
+	
+	if(request.getParameter("v1") != null){
+		v1 = request.getParameter("v1");
+		v2 = request.getParameter("v2");
+		String op = request.getParameter("op");
+		
+		result = calculate( Integer.parseInt(v1), Integer.parseInt(v2),	op);
+		
+		if ("+".equals(op)) {
+			selected[0] = "selected";
+		} else if ("-".equals(op)) {
+			selected[1] = "selected";
+		} else if ("*".equals(op)) {
+			selected[2] = "selected";
+		} else if ("/".equals(op)) {
+			selected[3] = "selected";
+		}
+				
+	}
+%>    
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Insert title here</title>
+</head>
+<body>
+	<h2>JSP 계산기</h2>
+	<form action="Calculator.jsp" method="get">
+		<input type="text" name="v1" size="4" value="<%=v1%>"> 
+		<select name="op">
+			<option value="+" <%=selected[0]%>>+</option>
+			<option value="-" <%=selected[1]%>>-</option>
+			<option value="*" <%=selected[2]%>>*</option>
+			<option value="/" <%=selected[3]%>>/</option>
+		</select> 
+		<input type="text" name="v2" size="4" value="<%=v2%>"> 
+		<input type="submit" value="=">
+		<input type="text" size="8" value="<%=result%>"><br>
+	</form> 
+</body>
+</html>
+<%! 
+private String calculate(int a, int b, String op) {
+	int r = 0;
+	
+	if ("+".equals(op)) {
+		r = a + b;	
+	} else if ("-".equals(op)) {
+		r = a - b;
+	} else if ("*".equals(op)) {
+		r = a * b;
+	} else if ("/".equals(op)) {
+		r = a / b;
+	}
+	
+	return Integer.toString(r);
+}
+%>
+```
+
+#### 템플릿 데이터
+
+- 템플릿 데이터는 클라이언트로 출력되는 콘텐츠다.
+- 즉 HTMl이나 XML, 자바스크립트, 스타일시트, JSON문자열, 일반 텍스드 등을 말한다.
+- 이 템플릿 데이터는 서블릿 코드를 생성할 때 출력문으로 바뀐다.
+
+
+#### JSP전용 태그 - 지시자
+
+`<%@ 지시자... %>`는 JSP전용태그로 '지시자'나 '속성'에 따라 특별한 자바 코드를 생성한다.
+JSP 지시자에는 page, taglib, include 가 있다.
+
+1) page 지시자
+
+page 지시자는 JSP 페이지와 관련된 속성을 정의할 때 사용하는 태그다.
+
+```Java
+<%@ page language="java" contentType="text/html; charset=UTF-8" %>
+```
+
+
+#### JSP 전용 태그 - 스크립트릿
+
+JSP페이지 안에 자바 코드를 넣을 때는 스크립트릿 태그 `<% %>`안에 작성한다.
+이러한 스크립트릿의 내용은 서블릿 파일을 생성할 때 그대로 복사된다.
+
+
+#### JSP 내장객체
+
+JSP 페이지에서 스크립트릿이나 표현식을 작성할 때 별도의 선언 없이 사용하는 자바 객체가 있다.
+이런 객체를 JSP 내장객체라 한다.
+예제 코드에선 `request 객체`가 여기에 해당한다
+
+```Java
+v1 = request.getParameter("v1");
+v2 = request.getParameter("v2");
+String op = request.getParameter("op");
+```
+
+JSP 기술 사양서에는 스크립트릿이나 표현식에서 JSP 내장 객체의 사용을 보장한다고 되어 있다.
+그래서 객체를 선언하지 않고 바로 사용할 수 있는 것이다.
+
+이는 JSP 엔진이 만든 서블릿 파일에서 `_jspService()`에 선언된 변수들을 보고 확인할 수 있다.
+
+
+#### JSP 전용태그 - 선언문
+
+JSP 선언문(Declarations) `<%! %>`는 서블릿 클래스의 멤버(변수나 메소드)를 선언할 때 사용하는 태그다.
+
+이때 선언문을 작성하는 위치는 어디든 상관없다. 
+왜냐하면 선언문은 `_jspService()`메소드 안에 복사되는 것이 아니라, 밖의 클래스 블록안에 복사되기 때문이다.
+
+
+#### JSP 전용태그 - 표현식
+표현식(Expressions) 태그는 문자열을 출력할 때 사용한다.
+따라서 표현식 `<%=%>` 안에는 결과를 반환하는 자바 코드가 와야 한다.
+표현식도 스크립트릿과 같이 `_jspService()`안에 순서대로 복사한다.
+
+
+
+---
+
+
+### 서블렛에서 뷰 분리하기
+
+클라이언트로부터 요청이 들어오면 서블릿은 데이터를 준비(모델)하여 JSP에 전달(컨트롤러 역할)합니다. JSP는 서블릿이 준비한 데이터를 가지고 웹 브라우저로 출력할 화면을 만든다.
+
+
+#### 값 객체(VO) = 데이터 수송 객체(DTO)
+
+데이터베이스에서 가져온 정보를 JSP페이지에 전달하려면 그 정보를 담을 객체가 필요하다.
+이렇게 값을 담는 용도로 사용하는 객체를 `값 객체(value object)`라고 부른다.
+
+값 객체는 계층간 또는 객체 간에 데이터를 전달하는 데 이용하므로 `데이터 수송 객체(DTO)` 라고도 부른다.
+
+> 값 객체 역할을 수행할 Member 클래스를 만들어 보자
+
+```java
+package spms.vo;
+
+import java.util.Date;
+
+public class Member {
+	
+	protected int 		no;
+	protected String 	name;
+	protected String 	email;
+	protected String 	password;
+	protected Date		createdDate;
+	protected Date		modifiedDate;
+	
+	public int getNo() {
+		return no;
+	}
+	public Member setNo(int no) {
+		this.no = no;
+		return this;
+	}
+	public String getName() {
+		return name;
+	}
+	public Member setName(String name) {
+		this.name = name;
+		return this;
+	}
+	public String getEmail() {
+		return email;
+	}
+	public Member setEmail(String email) {
+		this.email = email;
+		return this;
+	}
+	public String getPassword() {
+		return password;
+	}
+	public Member setPassword(String password) {
+		this.password = password;
+		return this;
+	}
+	public Date getCreatedDate() {
+		return createdDate;
+	}
+	public Member setCreatedDate(Date createdDate) {
+		this.createdDate = createdDate;
+		return this;
+	}
+	public Date getModifiedDate() {
+		return modifiedDate;
+	}
+	public Member setModifiedDate(Date modifiedDate) {
+		this.modifiedDate = modifiedDate;
+		return this;
+	}
+
+}
+```
+
+> Member 클래스는 회원 목록 출력에 필요한 데이터 뿐만 아니라 등록이나 변경할 때 사용하는 데이터도 포함하고 있다.
+
+위 코드를 살펴보면 특이한 점이 있는데 세터(Setter)메소드의 리턴값이 void가 아니라 Member 이다.
+이렇게 한 이유는 세터 메소드를 연속으로 호출하여 ㄱ밧을 할당할 수 있게 하기 위함이다.
+즉, 다음과 같이 코드를 작성할 수 있다.
+
+```java
+new Member().setNo(1).setName("홍길동").setEmail("hong@test.com");
+```
+
+
+MemberListServlet 클래스에서 뷰 역할을 분리하기 위해 코드를 제거해보자 
+
+
+
+```java
+ArrayList<Member> members = new ArrayList<Member>();
+```
+
+> ArrayList 객체를 위와 같이 생성한 후 ResultSet 객채 rs를 통해 DB로부터 받은 레코드를 값 객체 Member에 담은 과정을 한다.
+
+
+```java
+while(rs.next()) {
+	members.add(new Member()
+			.setNo(rs.getInt("MNO"))
+			.setName(rs.getString("MNAME"))
+			.setEmail(rs.getString("EMAIL"))
+			.setCreatedDate(rs.getDate("CRE_DATE"))	);
+}
+```
+
+위와같이 세터메소드를 연속으로 호출할 수 있는 이유가 바로 세터 메소드의 반환값을 this로 한 이유다.(객체를 생성하고 바로 초기화할 수 있다.)
+
+회원 목록 데이터가 준비되었으니, 화면 생성을 위해 JSp로 작업을 위임해야 한다.
+이렇게 다른 서블릿이나 JSP로 작업을 위임할 때 사용하는 객체가 RequestDispatcher 이다.
+이 객체는 HttpServletRequest를 통해 얻는다
+
+```java
+RequestDispatcher rd = request.getRequestDispatcher("/member/MemberList.jsp");
+```
+
+`RequestDispatcher`를 얻을 때, 반드시 어떤 서블릿(또는 JSP)으로 위임할 것인지 알려줘야 한다.
+이제 `RequestDispatcher`객체를 얻었으면 `포워드`하거나 `인클루드`를 하면 된다.
+
+포워드로 위임하면 해당 서블릿으로 제어권이 넘어간 후 다시 돌아오지 않는다.
+인클루드로 위임하면 해당 서블릿으로 제어권을 넘긴 후 그 서블릿이 작업을 끝내면 다시 제어권이 넘어온다.
+
+```java
+rd.include(request, response);
+```
+
+위 인클루드는 MemberListServlet.doGet() 메소드의 매개변수 값을 그대로 넘겼다.
+즉 MemberListServlet과 MemberList.jsp는 request 와 response를 공유한다.
+바로 이 부분을 이용해서 데이터를 전달 할 수 있다.
+
+ServletRequest 는 클라이언트의 요청을 다루는 기능 외에 어떤 값을 보관하는 보관소 기능도 있다.
+`setAttribute()를 호출하여 값을 보고나할 수 있고, getAttribute()를 호출하여 보관된 값을 꺼낼 수 있다.
+예제는 바로 이 기능을 사용해서 회원목록을 MemberList.jsp에 전달하고 있는 것이다.
+
+```java
+request.setAttribute("members", members);
+```
+
+MemberListServlet의 request는 MemberList.jsp와 공유하기 때문에, request에 값을 담아 두면 MemberList.jsp에서 꺼내 쓸 수 있다.
+
+
+
+#### 뷰 컴포넌트 만들기
+
+MemberListServlet으로부터 받은 회원 목록 데이터를 가지고 화면을 생성하는 JSP를 만들어 보자
+
+```php
+<%@page import="spms.vo.Member"%>
+<%@page import="java.util.ArrayList"%>
+<%@ page 
+	language="java" 
+	contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" 
+	"http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>회원 목록</title>
+</head>
+<body>
+
+<h1>회원목록</h1>
+<p><a href='add'>신규 회원</a></p>
+<%
+ArrayList<Member> members = (ArrayList<Member>)request.getAttribute("members");
+for(Member member : members) {
+%>
+<%=member.getNo()%>,
+<a href='update?no=<%=member.getNo()%>'><%=member.getName()%></a>,
+<%=member.getEmail()%>,
+<%=member.getCreatedDate()%>
+<a href='delete?no=<%=member.getNo()%>'>[삭제]</a><br>
+<%} %>
+
+</body>
+</html>
+```
+
+
+> Page 지시자를 아래와 같이 선언하면
+
+```java
+<%@page import="spms.vo.Member"%>
+<%@page import="java.util.ArrayList"%>
+```
+
+> JSP엔진이 서블릿 소스를 생성할 때 다음과 같이 import코드를 만든다
+
+```java
+import spms.vo.Member;
+import java.util.ArrayList;
+```
+
+
+
+`MemberListServlet`에서 넘겨준 회원 목록 데이터를 꺼내기 위해 `getAttribute()를 호출했다.
+
+```java
+ArrayList<Member> members = (ArrayList<Member>)request.getAttribute("members");
+for(Member member : members) {
+//뿌려줄 내용
+}
+```
+
+`request`는 JSP 내장객체라 불리며, _jspService()의 매개변수로 선언된 HttpServletRequest객체이다.
+따라서 request는 변수 선언 없이 바로 사용할 수 있다.
+위와 같이만 하면 이하 뿌려주는 내용은 이처럼 훨씬 편하게 사용할 수 있다.
+
+
+---
+
+### 포워딩과 인클루딩
+
+이번 절에서는 서블릿 끼리 작업을 위임하는 방법에 대해 알아보자.
+작업을 위임하는 방법에는 위에서 잠깐 언급했던 것처럼 두가지가 있다.
+
+1) 포워딩(Forwarding)
+> 포워드 방식은 작업을 한 번 위임하면 다시 이전 서블릿으로 제워권이 돌아오지 않는다.
+
+- 웹 브라우저가 `서블릿A`를 요청하면, `서블릿A`는 작업을 수행한다.
+- 서블릿A에서 '서블릿B'로 실행을 위임한다.
+- 서블릿B 는 작업을 수행하고 나서 응답을 완료한다. 이때 서블릿 A로 제어권이 돌아가지 않는다
+
+2) 인클루딩(including)
+
+> 인클루드 방식은 다른 서블릿으로 작업을 위임한 후, 그 서블릿의 실행이 끝나면 다시 이전 서블릿으로 제어군이 넘어온다.
+
+- 웹브라우저가 '서블릿A'를 요청하면 서블릿A는 작업을 수행한다.
+- 서블릿A 에서 '서블릿B'로 실행을 위임한다.
+- 서블릿B는 작업을 수행하고 나서 다시 서블릿A로 제어권을 넘긴다.
+- 서블릿A는 나머지 작업을 수행한 후 응답을 완료한다.
+
+
+#### 포워딩과 인클루딩 실습
+
+서블릿을 실행하다가 오류가 발생하면, 현재는 예외 객체를 던졌다. 이부분을 포워딩으로 오류 정보를 출력하는 페이지로 위임해보자
+
+또한 인크루딩 방식에서 전형적으로 사용되는 사례와 헤더와 푸터를 인크루딩하는 코드를 살펴보자
+
+> 기존에 예외를 던지는 catch 블록안의 코드를 아래처럼 `Error.jsp`라는 페이지로 위임하자
+> setAttribute()로 값을 객체에 보관하고 `인클루드` 혹은 `포워드`를 통해 처리하는 부분은 완전히 같다.
+> 
+
+```java
+catch (Exception e) {
+	//throw new ServletException(e);
+	request.setAttribute("error", e);
+	RequestDispatcher rd = request.getRequestDispatcher("/Error.jsp");
+	rd.forward(request, response);
+}
+```
+
+이젠 JSP페이지에 각각 헤더와 푸터 (예제에서는 Header.jsp, Tail.jsp파일이다)를 인클루드 하는데 이때 사용하는 태그는 아래를참고하자
+
+```java
+<jsp:include page="/Header.jsp">
+<jsp:include page="/Tail.jsp"/>
+```
+
+위의 태그들은 JSP엔진에 의해 서블릿이 생성될 때 결국 아래와 같은 코드로 바뀐다.
+
+```java
+RequestDispatcher rd = request.getReponseDispatcher("/Header.jsp");
+rd.inlcude(request, reponse);
+```
+
+> 물론 여기서 위내용을 스크립트릿 `<% %>`을 사용해서 처리해도 된다.
+
+
+---
+
+
+### 데이터 보관소
+
+서블릿 기술은 데이터를 공유하기 위한 방안으로 네 가지 종류의 데이터 보관소를 제공하며ㅡ,
+각각의 데이터 보관소는 공유 범위를 기준으로 구분된다.
+
+1) ServletContext 보관소
+- 웹 애플리케이션이 시작될 때 생성되어 웹 애플리케이션이 종료될 때까지 유지된다.
+- 이 보관소에 데이터를 보관하면 웹 애플리케이션이 실행되는 동안에는 모든 서블릿이 사용할 수 있다.
+- JSP에서는 `application 변수`를통해 이 보관소를 참조할 수 있다.
+
+2) HttpSession 보관소
+- 클라이언트의 최초 요청시 생성되어 브라우저를 닫을 때까지 유지된다.
+- 보통 로그인할 때 이 보관소를 초기화하고, 로그아웃하면 이 보관소에 저장된 값들을 비운다.
+- 따라서 이 보관소에 값을 보관하면 서블릿이나 JSP페이지에 상관없이 로그아웃 전까지 계속 값을 유지할 수 있다
+- JSP에서는 `session 변수`를 통해 참조 할 수 있다.
+
+3) ServletRequest 보관소
+- 클라이언트의 요청이 들어올 때 생성되며, 클라이언트에게 응답할 때까지 유지된다.
+- 포워딩이나 인클루딩하는 서블릿들 사이에서 값을 공유할때 유용하다
+- JSP에서는 `request 변수`를 통해 이 보관소를 참조할 수 있다.
+
+4) JSPContext 보관소
+- JSP페이지를 실행하는 동안만 유지된다. 
+- JSP에서는 pageContext변수를 통해 이 보관소를 참조할 수 있다.
+
+
+보관소에 값을 넣고 빼내는 방법은 모두 같다.
+다음의 메소드를 호출하여 값을 저장하고 조회할 수 있다.
+
+```java
+보관소 객체.setAttribute(키, 값);	//값 저장
+보관소 객체.getAttribute(키);	//값 조회
+```
+
+Map객체의 put()과 get()메소드와 유사하다.
+
+
+#### ServletContext의 활용 AppInit
+
+ServetletContext 객체는 웹 애플리케이션이 시작될 때 생성되어, 웹 애플리케이션이 종료될 때까지 유지되는 객체다
+
+지금까지 DB를 사용하는 서블릿들은 모두, 호출될 때마다 데이터베이스 커넥션을 생성했다.
+이 데이터베이스 커넥션 객체를 웹 애플리케이션이 시작될 대 생성하여 ServletContext에 저장해보자
+
+
+>  먼저 ServletContext를 활용할 새로운 클래스를 만들자.! 또한 서블릿이 되어야 하기 때문에 HttpServlet을 상속받는 클래스여야 한다
+
+```java
+package spms.servlets;
+
+import java.sql.*;
+import javax.servlet.*;
+import javax.servlet.http.HttpServlet;
+
+public class AppInitServlet extends HttpServlet {
+
+	@Override
+	public void init(ServletConfig config) throws ServletException{
+		System.out.println("AppInitServlet 준비 ....");
+		super.init(config);
+
+		try{
+			ServletContext sc = this.getServletContext();
+			Class.forName(sc.getInitParameter("driver"));
+			Connection conn = DriverManager.getConnection(sc.getInitParameter("url"),
+            sc.getInitParameter("username"), sc.getInitParameter("password"));
+			sc.setAttribute("conn", conn);
+
+		} catch(Throwable e){
+			throw new ServletException(e);
+		}
+	}
+
+	@Override
+	public void destroy(){
+		System.out.println("AppInitServlet 마무리....");
+		super.destroy();
+		Connection conn = (Connection)this.getServletContext().getAttribute("conn");
+
+		try{
+			if(conn != null && conn.isClosed() == false){
+				conn.close();
+			}
+		} catch(Exception e){}
+	}
+}
+```
+
+이번에 만든 서블릿은 클라이언트에게 호출할 서블릿이 아니므로 service()나 doGet(), doPost()등을 오버라이딩하지 않는다.
+그 대신 `init()`을 오버라이딩 했다.
+
+이 `init()`은 서블릿 객체가 생성될 때 딱 한번 호출되기 때문에 공유자원을 준비하는 코드가 놓이기에 최적의 장소라 할 수 있다
+(콘솔로 새로고침을 확인했을때 service()만 계속해서 찍혔던거 생각하면 될듯 )
+
+
+> 이제 위의 AppInitServlet의 배치정보를 DD파일(web.xml)에 추가하자.
+
+```xml
+<servlet>
+	<servlet-name>AppInitServlet</servlet-name>
+	<servlet-class>spms.servlets.AppInitServlet</servlet-class>
+	<load-on-startup>1</load-on-startup>
+</servlet>
+```
+
+여기서 주목할 부분은 `<load-on-startup>` 부분이다.
+
+서블릿 객체는 ++**클라이언트의 최초 요청시 생성**++된다고 분명히 말했었다.
+그말은 클라이언트가 단 한번도 요청하지 않으면 그 서블릿은 생성되지 않는다는 말이다.
+
+그러나 우리가 만든 `AppInitServlet` 처럼 다른 서블릿이 생성되기 전에 미리 준비 작업을 해야 하는 서블릿이라면, 클라이언트의
+요청이 없더라도 생성되어야만 한다.
+
+`<load-on-startup>`태그는 바로 이런 용도의 서블릿을 배치할 때 사용한다.
+이 태그의 값은 생성 순서다. 만약 생성순서가 같은 서블릿이 여러개 일댄 먼저 선언된 것이 먼저 생성된다.
+
+> 또한 AppInitServlet은 `<servlet-mapping>`태그가 없다.
+> 즉, 이 클래스에 대한 URL 이 지정되지 않았고, 이렇게 URL매핑정보가 없는 서블릿은 클라이언트에서 실행을 요청할 수 없다.
+> 이렇게 다른 서블릿을 위해(여기서는 데이터베이스 접속정보) 준비 작업을 수행하는 서블릿인 경우 URL을 지정하지 않는다.
+
+이제 MemberListServlet 에서도 DB 커넥션 코드를 삭제해도 된다 ( 물론 getAttibute()를 통해 방금 만든 inin... 처리한 클래스 불러와야 된다.)
+
+
+```java
+ServletContext sc = this.getServletContext();
+	/*
+	Class.forName(sc.getInitParameter("driver"));
+	conn = DriverManager.getConnection(
+			sc.getInitParameter("url"),
+			sc.getInitParameter("username"),
+			sc.getInitParameter("password"));
+	*/
+	conn = (Connection) sc.getAttribute("conn");
+```
+
+> 또한 DB커넥션 객체를 서블릿에서 관리하지 않으므로 finally 블록에 있는 conn.close()명령문도 삭제한다.
+
+```java
+try {if (rs != null) rs.close();} catch(Exception e) {}
+try {if (stmt != null) stmt.close();} catch(Exception e) {}
+//try {if (conn != null) conn.close();} catch(Exception e) {}
+```
+
+
+#### HttpSession의 활용
+
+HttpSession객체는 클라이언트 당 한개가 생성된다.
+웹 브라우저로부터 요청이 들어오면, 그 웹브라우저를 위한 HttpSession객체가 있는지 검사하고, 
+없다면 새로 HttpSession 객체를 만든다.
+
+이렇게 생성된 HttpSession객체는 그 웹 브라우저로부터 일정 시간 동안 Timeout 요청이 없으면, 삭제된다.
+따라서 로그인되어 있는 동안 지속적으로 사용할 데이터를 HttpSession객체에 저장한다.
+
+
+> LogInServlet 클래스
+
+```java
+package spms.servlets;
+
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+
+import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
+import spms.vo.Member;
+
+@WebServlet("/auth/login")
+public class LogInServlet extends HttpServlet {
+	private static final long serialVersionUID = 1L;
+
+	@Override
+	protected void doGet(
+			HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+		RequestDispatcher rd = request.getRequestDispatcher(
+				"/auth/LogInForm.jsp");
+		rd.forward(request, response);
+	}
+	
+	@Override
+	protected void doPost(
+			HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+		Connection conn = null;
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
+		
+		try {
+			ServletContext sc = this.getServletContext();
+			conn = (Connection) sc.getAttribute("conn");  
+			stmt = conn.prepareStatement(
+					"SELECT MNAME,EMAIL FROM MEMBERS"
+					+ " WHERE EMAIL=? AND PWD=?");
+			stmt.setString(1, request.getParameter("email"));
+			stmt.setString(2, request.getParameter("password"));
+			rs = stmt.executeQuery();
+			if (rs.next()) {
+				Member member = new Member()
+						.setEmail(rs.getString("EMAIL"))
+						.setName(rs.getString("MNAME"));
+				HttpSession session = request.getSession();
+				session.setAttribute("member", member);
+				
+				response.sendRedirect("../member/list");
+			} else {
+				RequestDispatcher rd = request.getRequestDispatcher(
+						"/auth/LogInFail.jsp");
+				rd.forward(request, response);
+			}
+		} catch (Exception e) {
+			throw new ServletException(e);
+			
+		} finally {
+			try {if (rs != null) rs.close();} catch (Exception e) {}
+			try {if (stmt != null) stmt.close();} catch (Exception e) {}
+		}
+	}
+}
+```
+
+> doGet(), doPost()로 나누어 작업했으며 Member객체를 HttpSession에 보관한다.
+> 로그인 성공이면 멤버리스트 페이지로 리다이렉트 하고 로그인에 실패한다면 로그인실패 JSP페이지로 포워딩한다.
+> 이때 로그인 실패의 경우 값을 다시 받을 필요가 없으므로 `인클루드`가 아닌 `forward` 처리했다고 보면 된다.
+
+-
+
+> /auth/LogInForm.jsp  로그인 폼 JSP 페이지 구현
+
+```java
+<%@ page 
+	language="java" 
+	contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" 
+	"http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>로그인</title>
+</head>
+<body>
+<h2>사용자 로그인</h2>
+<form action="login" method="post">
+	이메일: <input type="text" name="email"><br>
+	암호: <input type="password" name="password"><br>
+	<input type="submit" value="로그인">
+</form>
+</body>
+</html>
+```
+
+
+여기서 form action값을 `login`으로  입력폼 요청할 때의 URL과 같은 이유는 서버에서 GET, POST로 나누어서 처리하도록 해놨기때문이다.
+
+
+> Header.jsp 파일 - 로그인 한 사용자정보를 헤더정보에 표기
+
+```java
+<%@page import="spms.vo.Member"%>
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<%
+Member member = (Member)session.getAttribute("member");
+%>
+<div style="background-color:#00008b;color:#ffffff;height:20px;padding: 5px;">
+SPMS(Simple Project Management System)
+<span style="float:right;">
+<%=member.getName()%>
+<a style="color:white;" 
+  href="<%=request.getContextPath()%>/auth/logout">로그아웃</a>
+</span>
+</div>
+```
+
+
+> 세션으로 저장한 Member 객체를를 getAttribute()를 통해 JSP에서도 불러와서 사용할 수 있음을 알 수 있다.
+
+```java
+Member member = (Member)session.getAttribute("member");
+```
+
+여기서 `getAttribute("member")`의 "member"는 `setAttribute()`에서 값을 넣을때 지정한 **키값**이다.
+
+
+> 로그아웃 LogoutServlet 클래스
+
+
+```java
+package spms.servlets;
+
+import java.io.IOException;
+
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
+@WebServlet("/auth/logout")
+public class LogOutServlet extends HttpServlet {
+	private static final long serialVersionUID = 1L;
+
+	@Override
+	protected void doGet(
+			HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+		HttpSession session = request.getSession();
+		session.invalidate();
+		
+		response.sendRedirect("login");
+	}
+}
+```
+
+HttpSession 객체를 무효화 하기 위해 `invalidate()를 호출한다. 세션 객체가 무효화 된다는 것은 HttpSession객체가 제거된다는 것을 의미한다.
+
+HttpSession 객체를 무효화시킨 후 , 새로운 요청이 들어오면 HttpSession 객체가 새로 만들어진다.
+
+
+
+
+#### ServletRequest의 활용
+
+ServletRequest 객체에 데이터를 보관하면 포워딩이나 인클루딩을 통해 협업하는 서블릿(JSP 포함)끼리 데이터를 공유할 수 있다.
+그 이유는 request와 response를 같이 사용하기 때문이다.
+
+```java
+protected void doGet(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+// 중간 생략
+rd.forward(request, response); 
+```
+위 코드에서 forward()를 호출할때 doGet()의 매개변수를 그대로 넘겨주고 있음을 알수 있다.
+
+지금까지 작성한 예제를 통해 설명하자면 
+LogInServlet 과 LogInForm.jsp 사이에는 `ServletRequest`를 공유한다는 뜻이다.
+
+
+#### JspContext의 활용
+
+JspContext 보관소는 JSP페이지를 실행할 때 생성되고, 실행이 완료되면 이 객체는 제거된다.
+따라서 JSP페이지 내부에서만 사용도리 데이터를 공유할 때 사용한다.
+
+말이 어려우니 작성했던 예제로 예를 들어보자면 
+MemberList.jsp에 헤더페이지를 `<jsp:include page="/Header.jsp" />`의 형식으로 선언했었는데
+
+이런 태그들은 JSP엔진이 서블릿 클래스를 생성할 때 특정 자바 코드로 변환된다고 했었다.
+이때 이 태그의 값을 다루는 객체를 `태그 핸들러` 라고 부른다.
+
+바로 이 태그 핸들러에게 데이터를 전달하고자 할때 JspContext 보관소를 사용하는 것이다.
+
+
+
+---
+
+
+### JSP 액션 태그의 사용
+
+이번 절에서는 JSP페이지를 좀 더 개선해보자.
+JSP 페이지를 작성할 때, 가능한 자바코드의 삽입을 최소화하는 것이 유지보수에도 좋고 JSP라는 기술의 취지에도 부합한다.
+이를 위해 JSP에서는 JSP전용태그들을 제공하고 있는데 이런 태그들의 집합을 `JSP액션(Action)`이라 한다.
+
+- `<jsp:useBean>`
+자바 인스턴스를 준비한다. 보관소에서 자바 인스턴스를 새로 만들어 보관소에 저장하는 코드를 생성한다.
+자바 인스턴스를 자바 빈(JavaBean)이라고 부른다.
+
+- `<jsp:setProperty>`
+자바 빈의 프로퍼티 값을 설정한다.
+자바 객체의 세터 메소드를 호출하는 코드를 생성한다.
+
+- `<jsp:getProperty>`
+자바 빈의 프로퍼티 값을 꺼낸다.
+자바 객체의 게터 메소드를 호출하는 코드를 생성한다.
+
+- `<jsp:include>`
+정적(HTML, 텍스트파일등)또는 동적 자원(서블릿/JSP)을 인클루딩 하는 자바 코드를 생성한다.
+
+- `<jsp:forward>`
+현재 페이지의 실행을 멈추고 다른 정적 자원(HTML, 텍스트파일)이나 동적자원자원으로 포워딩하는 자바 코드를 생성한다.
+
+- `<jsp:param>`
+jsp:include, jsp:forward, jsp:params의 자식태그로 사용할 수 있다.
+ServletRequest 객체에 매개변수를 추가하는 코드를 생성한다.
+
+- `<jsp:plugin>`
+Object또는 EMBED HTML 태그를 생성한다.
+
+- `<jsp:element>`
+임의의 XML 태그나 HTML태그를 생성한다.
+
+
+> JSP 액션태그 - `<jsp:useBean>`
+```java
+<jsp:useBean id="members"
+			scope="request"
+         class="java.util.ArrayList"
+         type="java.util.ArrayList<spms.vo.Member>" />
+```
+
+위의 `<jsp:useBean />` 액션 태그를 자바 코드로 바꾼다면 다음과 같다.
+
+```java
+java.util.ArrayList<spms.vo.Member> members = (java.util.ArrayList<spms.vo.Memeber>)request.getAttribute("members";
+
+if(members == null){
+	members = new java.util.ArrayList();
+   request.setAttribute("members", member);
+}
+```
+
+`Id 속성`은 객체의 이름을 설정하는 부분이며, 이 이름을 사용하여 보관소로부터 값을 꺼낸다.
+또한 꺼낸 객체의 참조 변수 이름으로 사용한다.
+
+`scope 속성`은 객체를 조회하거나 새로 만든 객체를 저장할 보관소를 지정할 수 있으며,
+네가지 보관소 중에서 하나를 지정할 수 있다.
+- `page` 는 `JspContext`
+- `request` 는 `ServletRequest`
+- `session`은 `HttpSession`
+- `application`은 `ServletContext` 보관소를 의미한다.
+
+
+`class 속성`은 자바 객체를 생성할 때 사용할 클래스 이름을 지정한다.
+따라서 클래스 이름은 반드시 패키지 이름을 포함해야하고, 인터페이스 이름은 안된다.
+만약 `scope`에 지정된 보관소에서 객체를 찾지 못하면, 이 속성의 클래스 이름을 사용하여 객체를 생성한다.
+만약 이 속성이 없다면, 객체를 생성할 수 없다.
+
+`type 속성`은 참조변수를 선언할 때 사용할 타입의 이름이다.
+클래스 이름 또는 인터페이스 이름이 올 수 있다.
+클래스 이름과 인터페이스 이름은 반드시 패키지 이름을 포함해야 한다.
+
+
+
+---
+
+
+### EL 사용하기
+
+- EL(Expression Language)은 콤마`.`와 대괄호`[]`를 사용하여 자바 빈의 프로퍼티나 맵, 리스트, 배열의 값을 보다 쉽게 꺼내게 해주는 기술이다.
+- `static`으로 선언된 메소드를 호출할 수도 있다.
+- JSP에서는 주로 보관소에 들어 있는 값을 꺼낼 때 사용한다.
+- 액션태그를 사용하는 것보다 훨씬 더 간단하게 보관소에 들어 있는 객체에 접근하여 값을 꺼내기 쉽다.
+
+#### EL표기법
+EL은 `${}`와 `#{}`를 사용하여 값을 표현한다.
+
+
+1) `${표현식}`
+- `${표현식}` 으로 지정된 값은 JSP가 실행될 때 JSP페이지에 즉시 반영된다.
+- 즉시 적용(immediate evaluation)이라 부른다.
+
+
+2) `#{표현식}`
+- 시스템에서 필요하다고 판단될 때 그 값을 사용한다.
+- 지연 적용(deferred evaluation)이라 부른다.
+- 객체 프로퍼티의 값을 꺼내기보다는, 사용자가 입력한 값을 객체의 프로퍼티에 담는 용도로 많이 사용한다.
+- JSF(JavaSErver Faces)기술에서 UI를 만들 때 많이 사용한다.
+
+> EL 실제 표기법
+
+```java
+${member.no} 또는 ${member["no"]}
+// member = 객체이름
+// no = 프로퍼티
+```
+
+이 `EL 표기법`을 자바 코드로 표현하면 다음과 같다.
+
+```java
+Member obj = (Member)pageContext.findAttribute("member");
+int value=obj.getNo();
+```
+
+
+3) EL 에서 검색 범위 지정
+EL도 `<jsp:useBean>`처럼 네 군대 보관소에서 값을 꺼낼 수 있다. 다만 차이점은 EL로는 객체를 생성할 수 없다는 것이다.
+
+보관소를 참조할 때 사용하는 이름은 다음과 간다.
+
+- pageScope -> JspContext
+- requestSession -> ServletRequest
+- sessionScope -> HttpSession
+- applicationScope -> ServletContext
+
+
+---
+
+### JSTL 사용하기
+
+JSTL(JSP Standard Tag Library)은 JSP 확장태그이다
+JSP의 기본태그가 아니므로 사용하려면 JSTL API 및 이를 구현한 자바 라이브러리를 별도로 내려 받아야 한다.
+
+
+##### JSTL 라이브러리 
+1. [JSTL 사이트](http://jstl.java.net)에 접속하여 `JSTP API` 와 `JSTP Implementation`을 각각 다운 받는다.
+2. WebContent/WEB-INF/lib 폴더로 위치시킨다.
+
+##### JSTL 주요 태그의 사용법
+
+1) 사용할 태그 라이브러리를 선언
+`Java`에서는 `java.lang`패키지에 소속된 클래스인 경우 별도의 선언 없이 사용한다.
+`JSP` 에서도 `<jsp:useBean>`태그와 같이 기본으로 제공되는 태그는 별도의 선언 없이 사용한다.
+
+그러나 JSTL 확장 태그를 사용하려면 그 태그의 라이브러리를 선언해야 한다. 
+
+다음은 태그 라이브러리를 선언하는 문법이다
+```java
+<%@ taglib uri="사용할 태그의 라이브러리 URI" prefix="접두사" %>
+```
+`<%@ taglib %>`은 JSP의 지시자 태그이다. 
+uri속성은 태그 라이브러리의 네임스페이스 이름이다.
+네임스페이스 이름은 URI로 되어 있다. prefix속성은 JSTL 태그를 사용할 때 태그 이름 앞에 붙일 접두사다
+
+> 다음 표는 각 태그라이브러리에 정의된 URI 식별자와 JSTL 에서 제안하는 접두사 이름이다
+
+| 태그 라이브러리 | 접두사 | 네임스페이스의 URI 식별자
+|--------|--------|
+| Core | c | http://java.sun.com/jsp/jstl/core
+| XML | x | http://java.sun.com/jsp/jstl/xml
+| \18N | fmt  | http://java.sun.com/jsp/jstl/fmt
+| Database | sql | http://java.sun.com/jsp/jstl/sql
+| Functions | fn | http://java.sun.com/jsp/jstl/functions
+
+접두사 이름은 반드시 위의 표와 같을 필요는 없지만, 대부분의 개발자들이 JSTL에서 제안하는 접두사 이름을 사용하므로, 가급적 저 양식대로 사요하다
+
+> 예를 들어 JSTL 기본(Core)태그를 사용하려 한다면, 다음과 같이 taglib 지시자를 선언하면 된다
+
+```java
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+```
+
+
+##### `<c:out> 태그`
+- 출력문을 만드는 태그
+
+> 문법
+
+```java
+<c:out value="출력할 값" default="기본값" />
+또는
+<c:out value="출력할 값" >기본값</c:out>
+```
+
+- value 속성의 값으로 EL표현식을 사용할 수 있다.
+- value 값이 null이면 기본값이 출력된다.
+- 기본값마저 없다면 빈 문자열이 출력된다
+
+
+
+> 예제
+
+```java
+<c:out value="안녕하세요!" /></br>
+<c:out value="${null}" >반갑습니다.</c:out></br>
+<c:out value="안녕하세요!" >반갑습니다.</c:out></br>
+<c:out value="${null}" /></br>
+```
+
+>  출력값
+
+```html
+1) 안녕하세요!
+2) 반갑습니다.
+3) 안녕하세요!
+4)
+```
+
+___
+
+##### `<c:set> 태그`
+- 변수를 생성하거나 기존 변수의 값을 덮어쓸 때 사용
+- 이 태그로 생성한 변수는 JSP 페이지의 로컬 변수가 아니라 보관소(JspContext, ServletRequest, HttpSession, ServletContext)에 저장된다.
+
+> 문법
+
+```java
+// value 속성을 사용하여 값 설정
+<c:set var="변수명" value="값" scope="page|request|session|application" />
+
+// 태그 콘텐츠를 사용하여 값 설정
+<c:set var="변수명" scope="page|requset|session|application" />값</c:set>
+```
+
+`scope`속성의 기본값은 page 이다.
+scope 값을 생략하면 JspContext(page)에 변수명으로 값이 저장된다.
+
+> `<c:set>태그를 이용한 객체의 프로퍼티 값 설정`
+
+`<c:set>`을 이용하면, 보관소에 저장된 객체의 프로퍼티 값도 바꿀 수 있다.
+
+> 예제
+
+```java
+<h3>객체의 프로퍼티 값 변경</h3>
+<%!
+	public static class MyMember{
+		int no;
+		String name;
+		
+		public int getNo(){
+			return no;
+		}
+		public void setNo(int no){
+			this.no = no;
+		}
+		
+		public String getName(){
+			return name;
+		}
+		public void setName(String name){
+			this.name = name;
+		}
+	}
+%>
+<%
+MyMember member = new MyMember();
+member.setNo(100);
+member.setName("홍길동");
+pageContext.setAttribute("member", member);
+%>
+
+${member.name }<br>
+<c:set target="${member}" property="name" value="임꺽정" />
+${member.name}<br>
+```
+
+`<c:set>`을 사용하여 객체의 프로퍼티 값을 설정할 때는 안타깝게도 세터 메소드의 리턴타입이 `void`여야 한다.
+Member 클래스처럼 세터 메소드의 리턴 타입이 `void`가 아니라면,
+"프로퍼티에 해당하는 세터 메소드를 찾을 수 없다."는 예외가 발생한다.
+
+즉 세터 메소드의 리턴 타입을 `void`로 할 것인지, 아니면 해당 객체의 주소를 리턴하게 할 것인지 선택해야 한다.
+
+```java
+pageContext.setAttribute("member", member);
+```
+위 코드는 MyMember 내장 클래스를 정의한 후 JSP 페이지에서 객체를 생성한다.
+그리고 JspContext 에 저장한다.
+
+___
+
+##### `<c:remove> 태그`
+
+- 보관소에 값을 저장하는 태그가 있으면, 이 태그는 보관소에 저장된 값을 제거하는 태그다.
+- `var` 속성에 이름을 지정하면, 보관소에서 해당 이름을 가진 값을 제거한다.
+- 물론 `scope`속성으로 보관소를 명시 할 수 있다. (기본값은 마찬가지로 page 이다.)
+
+> 문법
+
+```java
+//value 속성을 사용하여 값 설정
+<c:remove var="변수명" scope="page|request|session|application"/>
+```
+
+> 예제
+
+```java
+<h3>보관소에 저장된 값 제거</h3>
+<% pageContext.setAttribute("username1", "홍길동"); %>
+${username1 }<br>
+<c:remove var="username1"/>
+${username1 }<br> 
+```
+
+> 출력결과
+
+```html
+1) 홍길동
+2)     
+```
+
+___
+
+
+##### `<c:if> 태그`
+
+- test 속성 값이 참이면, 콘텐츠가 실행된다.
+- 참거짓 테스트결과를 보관소에 저장할수도 있다.
+
+
+> 문법
+
+```java
+<c:if test="조건" var="변수명" scope="page|request|session|application">
+	콘텐츠
+</c:if>
+```
+
+> 예제
+
+```java
+<c:if test="${10>20 }" var="result1">
+10은 20보다 크다. <br>
+</c:if>
+${result1 }<br>
+
+<c:if test="${10<20 }" var="result2">
+10은 20보다 크다. <br>
+</c:if>
+${result2 }<br>
+```
+
+> 출력결과
+
+```html
+1) false
+2) 10은 20보다 크다.
+3) true
+```
+
+___
+
+
+##### `<c:choose> 태그`
+
+- 자바의 switch.. case 등과 같은 기능을 수행한다
+- 여러가지 조건에 따른 작업을 해야 할 필요가 있을 때 사용한다.
+
+> 문법
+
+```java
+<c:shoose>
+	<c:when test="참거짓 값"></c:whie>
+   <c:when test="참거짓 값"></c:whie>
+   ...
+   <c:otherwise></otherwise>
+</c:choose>   
+```
+
+이때 `<c:when>` 태그는 한 개 이상 있어야 한다.
+
+
+___
+
+
+
+##### `<c:forEach> 태그`
+
+- 반복적인 작업을 정의할 때 사용
+- 목록에서 값을 꺼내어 처리하고 싶을 때 이 태그를 사용한다.
+
+> 문법
+
+```java
+<c:forEach var="변수명" items="목록데이터" begin="시작인덱스" end="종료인덱스">
+	콘텐츠
+</c:forEach>   
+```
+
+`items` 속성의 값으로 다음의 값이 올 수 있다.
+- java.util.Collection 구현체. 예)ArrayList, LinkedList, Vector, EnumSet 등
+- java.util.Iterator 구현체
+- java.util.Enumeration 구현체
+- java.util.Map 구현체
+- 콤마(,) 구분자로 나열된 문자들
+
+`var` 속성은 반복문을 돌면서 items 에서 꺼낸 항목값을 가리키는 참조 변수다.
+begin 과 end 속성은 items 를 반복할 때 몇 번째 인덱스에서 시작하고, 몇 뻔째 인덱스에서 종료할 것인지를 지정한다.
+
+___
+
+##### `<c:forTokens> 태그`
+
+- 문자열을 특정 구분자(delimiter)로 분리하여 반복문을 돌릴 수 있다.
+
+> 예제
+
+```java
+<% pageContext.setAttibute("tokens", "v1=20&v2=30&op=+"); %>
+<ul>
+	<c:forTokens var="item" items="${tokens}" delims="&">
+   	<li>${item}</li>
+  </c:forTokens>
+</ul>
+```
+
+
+___
+
+
+
+##### `<c:url> 태그`
+
+- URl을 만들 때 사용하는 태그다.
+- 이 태그를 사용하면 매개변수를 포함한 URL을 손쉽게 만들 수 있다.
+
+> 예제
+
+```java
+<c:url var="calcUrl" value="http://localhost:9999/calc">
+	<c:param name="v1" value="20"/>
+	<c:param name="v2" value="30"/>
+	<c:param name="op" value="+"/>
+</c:url>
+<a href="${calcUrl} }">계산하기</a>
+```
+
+___
+
+##### `<c:import> 태그`
+
+- 여러 사이트의 내용을 가져와서 새로운 서비스를 만드는 매쉬업(Mashup)에 매우 유용한 태그.
+- url 속성에 콘텐츠가 있는 주소를 지정하면, 해당 주소로 요청하고, 응답 결과를 받아서 반환한다.
+
+> 예제
+
+```java
+<textarea name="" id="" cols="80" rows="10">
+	<c:import url="http://www.zdnet.co.kr/Include2/ZDNetKorea_News.xml" />
+</textarea>
+```
+
+위 예제를 실행해보면 ZDNET 사이트의 RSS 피드를 가져와서 뿌려주는걸 볼 수 있다.
+이때 var 속성을 설정하면, URL 응답결과를 바로 출력하지 않고 var에 설정된 이름으로 보관소에 저장한다.
+
+
+___
+
+
+##### `<c:redirect> 태그`
+
+- 리다이렉트 처리를 할 수 있다.
+- 내부적으로 HttpServletResponse의 sendRedirect()를 호출한다
+
+> 예제
+
+```java
+<c:redirect url="http://www.daum.net"/>
+```
+
+___
+
+##### `<fmt:parseDate> 태그`
+
+- 날짜 형식으로 작성된 문자열을 분석하여 java.util.Date객체를 생성한 후 지정된 보관소에 저장한다.
+
+> 예제
+
+```java
+<fmt:parsedate var="date1" value="2015-12-01" pattern="yyyy-MM-dd" />
+```
+
+##### `<fmt:formatDate> 태그`
+
+- 날짜 객체로부터 우리가 원하는 형식으로 날짜를 표현하고자 할 때 이 태그를 사용한다.
+- 사용법은 위 `parseDate`와 유사하며 value에 java.util.Date 객체를 설정하고, pattern에 표현 방식을 지정한다.
+
+> 예제
+
+```java
+<fmt:formatDate value="${date1}"  pattern="yyyy-MM-dd" />
+```
+
+> 출력결과
+
+```java
+12/01/15
+```
+
+
+
+
+
+
+---
+
+### DAO 만들기
+
+데이터 처리를 전문으로 하는 객체를 `DAO(data access object)`라고 부른다.
+
+- DAO는 데이터베이스나 파일, 메모리 등을 이용하여 애플리케이션 데이터를 생성, 조회, 변경, 삭제하는 역할을 수행한다.
+- DAO는 보통 하나의 DB테이블이나 DB 뷰에 대응한다.
+
+
+```java
+package spms.dao;
+
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
+
+import spms.vo.Member;
+
+
+public class MemberDao {
+	Connection connection;
+
+	public void setConnection(Connection connection) {
+		this.connection=connection;
+	}
+
+	public List<Member> selectList() throws Exception {
+		Statement stmt=null;
+		ResultSet rs=null;
+
+		try {
+			stmt=connection.createStatement();
+			rs=stmt.executeQuery(
+					"SELECT MNO,MNAME,EMAIL,CRE_DATE"+
+					"FROM MEMBERS"+
+					"ORDER BY MNO ASC");
+
+			ArrayList<Member> members=new ArrayList<Member>();
+
+			while(rs.next()){
+				members.add(new Member()
+						.setNo(rs.getInt("MNO"))
+						.setName(rs.getString("MNAME"))
+						.setEmail(rs.getString("EMAIL"))
+						.setCreatedDate(rs.getDate("CRE_DATE"))		);
+			}
+			return members;
+
+		} catch(Exception e){
+			throw e;
+		} finally {
+			try {if(rs!=null) rs.close();} catch(Exception e){}
+			try {if(stmt!=null) stmt.close();} catch(Exception e){}
+		}
+	}
+}
+```
+
+
+
+`selectList()`의 리턴타입이 `List인터페이스`인 것을 볼 수 있다.
+`selectList()`에서 실제로 리턴하는 것은 ArrayList 객체인데 리턴타입은 `List`로 작성되어있다.
+그 이유는 ++**프로그래밍의 유연성**++ 때문이다.
+
+
+> 프로그래밍의 유연성을 향상시키는 방법!
+> 메소드의 리턴타입이나 매개변수 타입을 특정 클래스로 명시하게되면, 반드시 그 클래스(서브 클래스 포함)의 객체를 주고 받아야 하기 때문에, 유연성이 떨어진다.
+> 이런 이유로 메소드를 호출하는 쪽과 그메소드를 만드는 쪽 모두 유연성을 높이고자,구체적인 클래스를 사용하기보다느 주로 인터페이스를 사용한다.
+
+
+connection 인스턴스 변수와 셋터 메소드.
+`MemberDao`에서는 ServletContext`에 접근할 수 없기 때문에, ServletContext에 보관된 DB Connection 객체를 꺼낼 수 없다.
+이를 해결하기 위해, 외부로부터 Connection 객체를 주입 받기 위한 셋터 메소드와 인스턴스 변수를 준비한 것이다.
+
+```java
+Connection connection;
+
+public void setConnection(Connection connection){
+	this.connection = connection
+}
+```
+
+이렇게 작업에 필요한 객체를 외부로부터 주입받는 것을 '의존성 주입(DI, Dependency Injection)'이라고 부른다.
+다른 말로 역제어(IoC, Inversion of Control)라고도 부른다.
+
+
+> 이제 MemberListServlet에서 MemberDao를 사용하는 코드로 변경해보자
+
+```java
+	public void doGet(
+			HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+		try {
+			ServletContext sc = this.getServletContext();
+			Connection conn = (Connection) sc.getAttribute("conn");
+			
+			MemberDao memberDao = new MemberDao();
+			memberDao.setConnection(conn);
+			
+			request.setAttribute("members", memberDao.selectList());		
+			response.setContentType("text/html; charset=UTF-8");
+			
+			RequestDispatcher rd = request.getRequestDispatcher("/member/MemberList.jsp");
+			rd.include(request, response);
+			
+			
+		} catch (Exception e) {
+			
+			e.printStackTrace();
+			request.setAttribute("error", e);
+			RequestDispatcher rd = request.getRequestDispatcher("/Error.jsp");
+			rd.forward(request, response);
+		}
+	}
+```
+
+
+`MemberDao`를 사용하기 전에, 세터를 먼저 호출하여 ServletContext에서 꺼낸 DB 커낵션 객체를 주입했다.
+
+```java
+ServletContext sc = this.getServletContext();
+Connection conn = (Connection) sc.getAttribute("conn");
+
+MemberDao memberDao = new MemberDao();
+memberDao.setConnection(conn);
+```
+
+이제 `MemberListServlet`클래스에는 더이상 데이터베이스와 관련된 코드는 없고 `MemberDao`에 이관되었다.
+
+즉 새로 변경된 `MemberListServlet`이 할 일은, 클라이언트의 요청에 대해 어떤 Dao를 사용하고, 어느 JSP로 그 결과를 보내야 하는지 조정(Control)하는 것이다.
+
+이로써 컴포넌트 별로 역할 구분이 명확해졌다. 즉 아래와 같이 구조 변경이 이루어졌다고 생각하면 될것 같다.
+
+서블릿 -> 컨트롤러
+Dao -> 모델
+JSP -> 뷰
+
+
+---
+
+### ServletContextListener 와 객체 공유
+
+서블릿 컨테이너는 웹 에플리케이션의 상태를 모니터링 할 수 있도록 웹 에플리케이션의 시작에서 종료까지
+주요한 사건에 대해 알림 기능을 제공한다.
+이런 알림 기능을 이용하고 싶다면, 규칙에 따라 객체를 만들어 DD파일(web.xml)에 등록하면 된다.
+
+> 이렇게 사건이 발생했을 때 알림을 받는 객체를 '리스너(Listener)' 라고 부른다.
+
+
+지금까지 작성한 예제의 `서블릿`은 요청을 처리하기 위해 매번 `DAO~ 인스턴스를 생성한다.
+이렇게 처리할 때 마다 객체를 만들게 되면 많은 가비지(gabage)가 생성되고, 실행 시간이 길어진다.
+서비스를 요청하는 클라이언트가 많아진다면 분명 문제가 될 소지가 있다
+
+`DAO`의 경우처럼 여러 서블릿이 사용하는 객체는 서로 공유하는 것이 메모리 관리나 실행 속도 측면에서 좋다.
+DAO를 공유하려면 `ServletContext`에 저장하는 것이 좋은데, 그 이유는 **웹에플리케이션이 종료될 때까지 유지되는 보관소**이기 때문이다.
+
+> 그러면 서블릿이 사용할 DAO 객체는 언제 준비해야 될까?
+
+공유할 객체들은 서블릿이 실행되기전에 준비되어야 한다. 
+따라서 보통 웹 에플리케이션을 시작할 때 공유 객체들을 준비한다.
+
+이미 지난 예제과정에서 DB커넥션 객체를 공유하기 위해 `AppInitServlet`을 만든적이 있다.
+이 서블릿에서 DAO객체를 준비해도 되지만, 서블릿을 통해 공유 객체를 준비하는 것 보다, 더 좋은 방법이 있다.
+
+> 바로 이번 장의 주제인 웹 에플리케이션 이벤트를 이용하는 것이다.
+
+웹에플리케이션이 시작되거나 종료되는 사건이 발생하면, 이를 알리고자 서블릿 컨테이너는 리스너의 메소드를 호출한다. 바로 이 리스너에서 DAO를 준비하면 된다.
+DAO뿐만 아니라 AppInitServlet이 하던 일도 이 리스너에서 처리하면 된다.
+
+#### ServletContextListener의 활용
+
+- 웹 어플리케이션의 시작과 종료 사건을 담당할 리스너를 준비한다.
+- AppInitServlet이 하던일을 이 리스너로 옮긴다.
+- MemberDao의 인스턴스 생성도 이 리스너에서 준비한다.
+
+
+
+#### 리스터 ServletContextListener 만들기
+
+> 웹어플리케이션의 시작과 종료 이벤트를 처리할 리스너는 ServletContextListener 인터페이스를 구현해야 한다.
+
+- contextInitialized()는 웹에플리케이션이 시작될 때 호출된다.  공용객체를 준비해야 한다면, 바로 이 메소드에 작성하면 된다.
+- contextDestroyed()는 웹어플리케이션이 종료되기 전에 호출된다. 자원해체를 해야 한다면, 바로 이 메소드에 작성하면 된다.
+
+> 참고로 클래스의 이름을 ContextLoaderListener로 정한 이유는, 나중에 스프링 프레임워크를 배울때 좀더 이해하기 쉽게 만들기 위함인데 스프링에도 같은 역할의 같은 이름을 가진 클래스가 존재한다.
+
+___
+
+> spms.listeners 패키지의 ContextLoaderListener 클래스
+
+```java
+package spms.listeners;
+
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+
+import javax.servlet.ServletContext;
+import javax.servlet.ServletContextEvent;
+import javax.servlet.ServletContextListener;
+
+import spms.dao.MemberDao;
+
+@WebListener
+public class ContextLoaderListener implements ServletContextListener {
+	Connection conn;
+	
+	@Override
+	public void contextInitialized(ServletContextEvent event){
+		try{
+			ServletContext sc = event.getServletContext();
+			
+			Class.forName(sc.getInitParameter("driver"));
+			conn=DriverManager.getConnection(
+						sc.getInitParameter("url"),
+						sc.getInitParameter("username"),
+						sc.getInitParameter("password"));
+			MemberDao memberDao = new MemberDao();
+			memberDao.setConnection(conn);
+			
+			sc.setAttribute("memberDao", memberDao);
+		} catch(Throwable e){
+			e.printStackTrace();
+		}
+	}
+	
+	@Override
+	public void contextDestroyed(ServletContextEvent event){
+		try{
+			conn.close();
+		} catch (Exception e){}
+	}
+}
+```
+
+##### ServletContextListener 인터페이스의 구현
+
+웹 에플리케이션의 시작과 종료사건을 처리하려면, 
+리스너 클래스는 반드시 ServletContextListener 규칙에 따라 작성해야 한다.
+위의 ContextLoaderListener 클래스는 이 인터페이스를 구현하고 있다.
+
+```java
+public class ContexxtLoaderLister implements ServletContextListener{}
+```
+
+##### contextInitialized() 메소드
+
+contextInitialized()메소드를 보면, AppInitServlet 클래스에 있던 DB커넥션 객체를 준비하는 코드를 가져왔다.
+
+```java
+Class.forName(sc.getInitParameter("driver"));
+conn=DriverManager.getConnection(...);
+```
+
+> 이 리스너의 핵심은 웹 에플리케이션이 시작될 때 MemberDao 객체를 준비하여 ServletContext에 보관하는 것이다
+
+```java
+MemberDao memberDao=new MemberDao();
+memberDao.setConnection(conn);
+sc.setAttribute("memberDao", memberDao);
+```
+
+
+##### contextDestroyed() 메소드
+
+DB커넥션 객체의 참조변수 'conn'은 리스너의 인스턴스 변수다.
+인스턴스 변수로 만든 이유는 contextDestroyed()에서 conn을 사용하기 때문이다.
+즉 웹 에플리케이션이 종료되기 저에 데이터베이스와의 연결을 끊어야 하기 때문이다
+
+##### ContextLoaderListener의 배치
+
+리스너의 배치는 두 가지 방법이 있다.
+1. 앞의 예제처럼 어노테이션을 선언하는 방법으로 클래스 선언위에 @WebListener라고 하면 된다.
+
+2. DD파일(web.xml)에 XML 태그를 선언하는 것이다.
+
+```xml
+<!-- 리스너 선언 -->
+<listener>
+	<listener-class>spms.listeners.ContextLoaderListener</listener-class>
+</listener>   
+```
+위 의 태그를 web.xml 파일의 `<web-app>`태그 안에 작성하면 된다.
+Servlet 2.4버전 까지는 `<listener>` 태그를 작성할때 순서를 지켜야 한다.
+즉, `<filter-mapping>`태그 다음에, `<servlet>`태그 이전에 와야 한다.
+2.5버전 부터는 순서에 상관없다.
+
+
+
+#### 기존의 서블릿 변경하기
+
+기존의 서블릿을 직접 MemberDao 객체를 생성하는대신, ServletContext에 저장된 DAO객체를 꺼내 쓰는것으로 변경해보자
+
+> MemberListServlet 클래스
+
+```java
+@Override
+	public void doGet(
+			HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+		try {
+			ServletContext sc = this.getServletContext();
+
+			//변경전 코드
+            //Connection conn = (Connection) sc.getAttribute("conn"); 
+			//MemberDao memberDao = new MemberDao();
+
+			//변경된 코드
+			MemberDao memberDao = (MemberDao)sc.getAttribute("memberDao");
+			memberDao.setConnection(conn);
+         ... 이하 생략
+}
+```
+
+> 이렇게 ServletContext에 들어 있는 MemberDao 객체를 재사용하게 되면, 객체를 생성할 필요가 없기 때문에 
+> 실행속도가 빨라지고, 가비지가 발생하지 않는다.
+
+
+#### AppInitServlet 제거
+AppInitServlet 이 하던 일은 ContextLoaderListener로 이관되었다.
+이 클래스는 더이상 서블릿으로서 역할을 수행할 필요가 없으므로 DD파일 에서 배치정보를 제거해도 무방하다.
+
+
+---
+
+
+### DB 커넥션풀
+
+DB 커넥션 객체를 여러 개 생성하여 풀(Pool)에 담아 놓고 필요할 때 꺼내쓰는 방식으로
+즉, 자주 쓰는 객체를 미리 만들어 두고, 필요할 때마다 빌리고, 사용한 다음 반납하는 방식을 `풀링(pooling)`이라 한다.
+
+이렇게 여러 개의 객체를 모아둔 것을 `객체 풀(object pool)`이라고 하고, 여러 개의 DB 커넥션을 관리하는 객체를
+DB 커넥션풀 이라고 부른다.
+사용한 DB 커넥션 객체는 다른 작업에서 다시 쓸 수 있도록 풀에 반환한다.
+
+> 지금까지는 DB 커넥션 객체를 하나만 만들어 사용했고 테스트에도 문제가 없었다. 그럼 왜 DB커넥션 객체를 여러개 생성해야 할까?
+
+DAO1~3까지 3개의 DAO가 있다고 가정했을때 이 DAO들이 사용하는 `Statement`는 같은 커넥션에서 생성한 객체이다.
+
+SQL문을 실행하다 보면 예외가 발생했을 때 이전 상태로 되도려야 할 경우가 있다.
+이렇게 작업하기 전 상태로 되돌리는 것을 `롤백(rollback)`이라고 하는데, 안타깝게도 Statement객체에는 롤백 기능이 없고,
+커넥션 객체를 통해서만 롤백을 수행할 수 있다.
+
+> 문제는 바로 여기서 발생한다.
+
+DAO3가 커넥션 객체의 롤백 기능을 호출할 경우, 그 커넥션을 통해 이루어지는 다른 모든 작업도 롤백된다는 것이다.
+즉, DAO1,2가 작업한 것 까지 이전 상태로 되돌려진다.
+
+**이러한 이유로 웹브라우져의 요청을 처리할 때, 각 요청에 대해 개별 DB커넥션을 사용해야 한다.**
+
+그리고 이런 문제를 해결하기 위해 등장한 것이 바로 DB 커넥션 풀이기 때문에,
+각 요청에 대해 별도의 커넥션 객체를 사용하여 다른 작업에 영향을 주지 않으며, 또한 사용된 DB커넥션 객체는 버리지 않고
+풀에 보관해 두었다가 다시 사용한다. 
+그렇기에 가비지가 생성되지 않고 속도도 빨리지게 된다.
+
+
+
+
