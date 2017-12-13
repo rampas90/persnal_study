@@ -1,0 +1,54 @@
+<!DOCTYPE struts-config PUBLIC "-//Apache Software Foundation//DTD Struts Configuration 1.2//EN" "http://jakarta.apache.org/struts/dtds/struts-config_1_2.dtd">
+
+<struts-config>
+	<form-beans>
+		<form-bean name="bbsEditForm" type="my.bbs2.controller.form.BbsEditForm" />
+	</form-beans>
+	<global-forwards>
+		<forward name="gb-bbs-msg" path="/bbs2/bbs_msg.jsp" redirect="false" />
+	</global-forwards>
+   <action-mappings>
+	   <action path="/intro" forward="/intro.jsp" />
+		<action path="/index" parameter="/index.jsp" type="org.apache.struts.actions.ForwardAction" />
+      
+		<action path="/bbs-write" parameter="method" type="my.bbs2.controller.action.BbsAction">
+		   <forward name="fw-bbs-write" path="/bbs2/bbs_write.jsp" redirect="false" />
+		</action>
+      
+		<action path="/bbs-writeOk" type="my.bbs2.controller.action.BbsWriteOkAction" />
+      
+      <action path="/bbs-list" parameter="method" type="my.bbs2.controller.action.BbsAction">
+		   <forward name="fw-bbs-list" path="/bbs2/bbs_list.jsp" redirect="false" />
+		</action>
+      
+		<action path="/bbs-content" parameter="method" type="my.bbs2.controller.action.BbsAction">
+		   <forward name="fw-bbs-content" path="/bbs2/bbs_content.jsp" redirect="false" />
+		</action>
+      
+      <action path="/bbs-content-down" parameter="method" type="my.bbs2.controller.action.BbsAction">
+         <forward name="fw-bbs-content-down" path="/bbs2/bbs_down.jsp" redirect="false" />
+      </action>
+      
+		<action path="/bbs-replyOk" parameter="method" type="my.bbs2.controller.action.BbsAction" />
+      
+		<action path="/bbs-reply-delOk" parameter="method" type="my.bbs2.controller.action.BbsAction" />
+      
+		<action path="/bbs-delete" parameter="/bbs2/bbs_delete.jsp" type="org.apache.struts.actions.ForwardAction" />
+      
+		<action path="/bbs-deleteOk" parameter="method" type="my.bbs2.controller.action.BbsAction" />
+      
+		<action path="/bbs-rewrite" parameter="method" type="my.bbs2.controller.action.BbsAction">
+		   <forward name="fw-bbs-rewrite" path="/bbs2/bbs_rewrite.jsp" redirect="false" />
+		</action>
+      
+		<action path="/bbs-rewriteOk" type="my.bbs2.controller.action.BbsRewriteOkAction" />
+      
+		<action path="/bbs-edit" parameter="method" type="my.bbs2.controller.action.BbsAction">
+		   <forward name="fw-bbs-edit" path="/bbs2/bbs_edit.jsp" redirect="false" />
+		</action>
+      
+		<action path="/bbs-editOk" parameter="method" type="my.bbs2.controller.action.BbsAction" name="bbsEditForm" />
+	</action-mappings>
+   
+</struts-config>
+

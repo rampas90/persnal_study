@@ -1,0 +1,23 @@
+@CHARSET "UTF-8";
+
+html, body{margin:0;}
+
+/* write.jsp */
+.jumbotron {padding-bottom:18px;}
+.form_wrap label{ font-size:14px; font-weight:bold;}
+.form_btn {text-align:center; padding:10px 0 10px 0;}
+.th_design th{text-align:center; padding:10px;}
+.td_design td{padding:8px 0 8px 5px;}
+.edit_navbar{background:#9c27b0;}
+.edit_navbar .edit_navbar>.active>a, .edit_navbar .navbar-nav>.active>a:hover, .edit_navbar .navbar-nav>.active>a:focus {
+    color: #ffffff;
+    background-color: #660377;
+}
+.edit_navbar .navbar-nav>.active>a, .edit_navbar .navbar-nav>.active>a:hover, .edit_navbar .navbar-nav>.active>a:focus {
+    color: #ffffff;
+    background-color: #660377;
+}
+.attr_design01{padding:10px 15px;}
+.btn_design01{text-align:right;}
+.container{margin-bottom:100px !important;}
+.custom_p{padding-left:0 !important;}

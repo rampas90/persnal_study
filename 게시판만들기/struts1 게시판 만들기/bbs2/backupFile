@@ -1,0 +1,59 @@
+		<!-- 꼬리말 달기 테이블 -->
+		<form action="bbs_replyOk.jsp" method="POST" name="reply">
+			<input type=hidden name="idx" value="<%=dto.getIdx()%>">
+			<table width=600 border=1>
+				<tr>
+					<td><b>리플 달기</b></td>
+					<td colspan=3 align="left">&nbsp;&nbsp;&nbsp;
+						내  용
+						&nbsp;&nbsp;&nbsp;<textarea name=reply_content row= 5 cols=70 ></textarea><br>
+						
+						&nbsp;&nbsp;&nbsp;작성자 <input type=text name="reply_writer" size=10>
+						비밀번호 <input type=password name=reply_pwd size=4>
+						<input type=button value="등록" onclick="javascript:check();">
+						
+					</td>
+				</tr>
+				
+			</table>
+		</form>
+		<!-- 꼬리말 목록 보기 테이블  -->
+
+		<table border=1 width=600>
+			<tr align=center>
+				<td colspan=2 bgcolor="dgegeg"><b>REPLY</b></td>
+			</tr>
+			<%
+				java.util.ArrayList<ReplyDTO> replyList = mgr.replyList(idx);
+			
+				if(replyList == null || replyList.size() == 0){
+			%>
+				<tr>
+					<td colspan=2><b>서버오류이거나 게시물이 없어요</b></td>
+				</tr>
+			<%
+					return;
+				}// if ----------
+			
+				for(ReplyDTO rdto : replyList){ 
+			%>
+			
+			<tr>
+				<td width="80%" align="left">[<%=rdto.getWriter() %>]:[<%=rdto.getContent() %>]<br>
+				작성일:<%=rdto.getWritedate().toString() %>
+				</td>
+				<td>
+				<form name="replyDel"  method="post" action="bbs_reply_delOk.jsp">
+				PASSWORD
+				<!-- hidden :  no를 hidden으로 넘기자 -->
+				<input type=hidden name="no" value="<%=rdto.getNo() %>">
+				<input type=hidden name="idx" value="<%=dto.getIdx()%>">
+				
+				<input type="password" size=6 name="delPwd">
+				<input type="submit" value="전송">
+				</form>
+				</td>
+			</tr>
+			<%} // for------- %>
+			
+		</table>

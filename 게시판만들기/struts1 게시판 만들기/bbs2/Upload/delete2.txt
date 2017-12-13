@@ -1,0 +1,51 @@
+public int editOk(HttpServletRequest req)
+		throws SQLException{
+		
+		String selPwd_sql = "select pwd from jsp_board where idx=?";
+		String editOk_sql = "update jsp_board set writer=?,"+
+									"email=?,homepage=?,subject=?,content=? where idx=?";
+		try{
+			//1. 사용자가 입력한 정보를 req를 통해 뽑아오자..
+			String idx = req.getParameter("idx");
+			String writer = req.getParameter("writer");
+			String pwd = req.getParameter("pwd");
+			String subject = req.getParameter("subject");
+			String content  =req.getParameter("content");
+			String homepage = req.getParameter("homepage");
+			String email = req.getParameter("email");
+			
+			//2. 사용자 비번과 db의 비번 일치여부 확인...
+				
+			con = ds.getConnection();
+			ps5 = con.prepareStatement(selPwd_sql);
+			ps5.setString(1,idx);
+			rs5 = ps5.executeQuery();
+			
+			if(rs5.next()){
+				String dbPwd = rs5.getString("pwd");
+				if(dbPwd.equals(pwd.trim())){
+					//비번이 일치한다면...
+					//update문을 수행...
+					ps5_1 = con.prepareStatement(editOk_sql);
+					ps5_1.setString(1, writer);
+					ps5_1.setString(2,email);
+					ps5_1.setString(3,homepage);
+					ps5_1.setString(4,subject);
+					ps5_1.setString(5,content);
+					ps5_1.setString(6,idx);
+					
+					int n = ps5_1.executeUpdate();
+					
+					return n;
+				}
+			}
+			return -1;
+			
+		}finally{
+			if(rs5 != null)rs5.close();
+			if(ps5 != null)ps5.close();
+			if(ps5_1 != null)ps5_1.close();
+		}
+		
+		
+	}
